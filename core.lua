@@ -476,20 +476,99 @@ end
 function CoreModule.initializeMonitoring(components, uiController)
     local services = getServices()
     
-    -- Anti-detection: Metatable hook system
-    local gameMetatable = getrawmetatable(game)
-    local originalNamecall = gameMetatable.__namecall
-    
-    local function makeMetatableWriteable()
-        local writeableFunctions = {
-            function() setreadonly(gameMetatable, false) end,
-            function() make_writeable(gameMetatable) end
-        }
-        
-        for _, func in ipairs(writeableFunctions) do
-            pcall(func)
-        end
-    end
+-- Anti-detection: Core monitoring system
+function CoreModule.initializeMonitoring(components, uiController)
+    local services = getServices()
+   
+    -- Сохраняем оригинальный __namecall, чтобы вызывать его после перехвата
+    local originalNamecall = getrawmetatable(game).__namecall
+   
+    -- Anti-detection: Remote call interceptor
+    local function interceptRemoteCall(obj, method, ...)
+        local args = {...}
+        -- Оборачиваем генерацию скрипта в pcall, чтобы избежать ошибок, если придут некорректные данные
+        local success, scriptSource = pcall(generateScript, obj, method, unpack(args))
+        if not success then
+            scriptSource = "-- Failed to generate script: " .. tostring(scriptSource)
+        end
+
+        local caller = getfenv(2).script
+        local returnValue = nil
+        
+        if obj.ClassName == "RemoteFunction" then
+            -- Важно: здесь НЕ вызываем InvokeServer, так как originalNamecall сделает это за нас.
+            -- Мы просто готовим данные для логгера.
+            returnValue = "Awaiting return value from " .. obj.Name
+        end
+        
+        table.insert(_state.namecallQueue, {
+            script = scriptSource,
+            caller = caller,
+            remote = obj,
+            method = method,
+            returnValue = returnValue
+        })
+    end
+    
+    -- Anti-detection: Remote logger
+    local function logRemoteCall(callData)
+        if not components.settingsPanel[callData.remote.Name] or 
+           components.settingsPanel[callData.remote.Name].Enabled.Text == "Disabled" then
+            return
+        end
+        
+        _state.remotesFired = _state.remotesFired + 1
+        components.totalLabel.Text = tostring(_state.remotesFired)
+        
+        local GuiModule = require(script.Parent.gui)
+        local remoteBtn = GuiModule.createRemoteButton()
+        remoteBtn.Parent = components.remotesList
+        remoteBtn.Position = UDim2.new(0, 10, 0, -20 + #components.remotesList:GetChildren() * 30)
+        remoteBtn.Icon.Image = callData.method:lower():match("fire") and "rbxassetid://413369506" or "rbxassetid://413369623"
+        remoteBtn.RemoteName.Text = callData.remote.Name
+        remoteBtn.ID.Text = tostring(_state.remotesFired)
+        
+        remoteBtn.MouseButton1Down:Connect(function()
+            uiController.displayScript(callData.script)
+            _state.globalCaller = callData.caller
+            _state.functionReturn = callData.returnValue or callData.remote.Name .. " is not a RemoteFunction"
+        end)
+    end
+    
+    -- Anti-detection: Return value display
+    components.getreturn.MouseButton1Down:Connect(function()
+        if _state.functionReturn then
+            uiController.displayScript(_state.functionReturn)
+        end
+    end)
+    
+    -- Anti-detection: Queue processor
+    services.run.Stepped:Connect(function()
+        while #_state.namecallQueue > 0 do
+            logRemoteCall(table.remove(_state.namecallQueue, 1))
+        end
+    end)
+    
+    -- ИСПРАВЛЕНИЕ: Используем hookmetamethod для безопасного перехвата
+    hookmetamethod(game, "__namecall", function(obj, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+        
+        -- Проверяем, является ли вызов обращением к серверу и включен ли шпион
+        if _state.spyEnabled and typeof(obj) == "Instance" and obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+            if method == "FireServer" or method == "InvokeServer" then
+                -- Исключаем стандартные события, чтобы не засорять лог
+                if obj.Name ~= "CharacterSoundEvent" then
+                    -- Помещаем перехваченный вызов в очередь на обработку
+                    pcall(interceptRemoteCall, obj, method, unpack(args))
+                end
+            end
+        end
+        
+        -- ВАЖНО: Вызываем оригинальную функцию, чтобы игра продолжала работать корректно
+        return originalNamecall(obj, ...)
+    end)
+end
     
     makeMetatableWriteable()
     
@@ -557,17 +636,6 @@ function CoreModule.initializeMonitoring(components, uiController)
         end
     end)
     
-    -- Anti-detection: Hook the namecall metamethod
-    gameMetatable.__namecall = function(obj, ...)
-        local method = tostring(getnamecallmethod())
-        local args = {...}
-        
-        if obj.Name ~= "CharacterSoundEvent" and method:match("Server") and _state.spyEnabled then
-            interceptRemoteCall(obj, method, unpack(args))
-        end
-        
-        return originalNamecall(obj, unpack(args))
-    end
-end
+
 
 return CoreModule
