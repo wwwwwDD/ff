@@ -1,453 +1,542 @@
--- GUI Components Module
--- Separated UI creation and styling
+local VisualInterface = Instance.new("ScreenGui")
+local MainContainer = Instance.new("Frame")
+local HeaderBar = Instance.new("Frame")
+local MinimizeButton = Instance.new("TextButton")
+local HeaderTitle = Instance.new("TextLabel")
+local EventsList = Instance.new("ScrollingFrame")
+local CodeView = Instance.new("ScrollingFrame")
+local ControlPanel = Instance.new("Frame")
+local CopyButton = Instance.new("TextButton")
+local GetResultButton = Instance.new("TextButton")
+local ClearButton = Instance.new("TextButton")
+local StringEncryptionButton = Instance.new("TextButton")
+var_EnableMonitoring = Instance.new("TextButton")
+var_LastEventLabel = Instance.new("TextLabel")
+var_TotalEventsLabel = Instance.new("TextLabel")
+var_SettingsButton = Instance.new("TextButton")
+var_RemoteSettings = Instance.new("ScrollingFrame")
+var_TemplateStorage = Instance.new("Frame")
+var_EventTemplate = Instance.new("TextButton")
+var_EventIcon = Instance.new("ImageLabel")
+var_EventNameLabel = Instance.new("TextLabel")
+var_EventIdLabel = Instance.new("TextLabel")
+var_SettingTemplate = Instance.new("TextButton")
+var_SettingIcon = Instance.new("ImageLabel")
+var_SettingNameLabel = Instance.new("TextLabel")
+var_SettingIdLabel = Instance.new("TextLabel")
+var_CodeLineTemplate = Instance.new("Frame")
+var_LineNumber = Instance.new("TextLabel")
+var_CodeText = Instance.new("TextLabel")
+var_TokenHighlight = Instance.new("TextLabel")
+var_StringHighlight = Instance.new("TextLabel")
+var_CommentHighlight = Instance.new("TextLabel")
+var_KeywordHighlight = Instance.new("TextLabel")
+var_GlobalHighlight = Instance.new("TextLabel")
+var_RemoteMethodHighlight = Instance.new("TextLabel")
+var_EnabledStatus = Instance.new("TextLabel")
+var_FullscreenButton = Instance.new("TextButton")
+var_SettingsTab = Instance.new("Frame")
+var_FilterFunctionsButton = Instance.new("TextButton")
+var_FilterEventsButton = Instance.new("TextButton")
+var_SearchBox = Instance.new("TextBox")
 
-local GuiModule = {}
+VisualInterface.Name = "VisualInterface"
+VisualInterface.Parent = game.CoreGui
+VisualInterface.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Anti-detection: Dynamic property names and indirect references
-local function createUI()
-    local services = {
-        core = game:GetService("CoreGui"),
-        tween = game:GetService("TweenService"),
-        run = game:GetService("RunService"),
-        players = game:GetService("Players")
-    }
-    
-    -- Main container structure
-    local components = {}
-    
-    -- Create main screen GUI
-    components.main = Instance.new("ScreenGui")
-    components.main.Name = "RemoteSpy"
-    components.main.Parent = services.core
-    components.main.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+MainContainer.Name = "MainContainer"
+MainContainer.Parent = VisualInterface
+MainContainer.Active = true
+MainContainer.BackgroundColor3 = Color3.new(0.141176, 0.141176, 0.141176)
+MainContainer.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+MainContainer.Draggable = true
+MainContainer.Position = UDim2.new(0.3, 0, 0.2, 0)
+MainContainer.Size = UDim2.new(0.4, 0, 0.6, 0)
+MainContainer.ClipsDescendants = true
 
-    -- Background frame
-    components.bg = Instance.new("Frame")
-    components.bg.Name = "BG"
-    components.bg.Parent = components.main
-    components.bg.Active = true
-    components.bg.BackgroundColor3 = Color3.new(0.141176, 0.141176, 0.141176)
-    components.bg.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    components.bg.Draggable = true
-    components.bg.Position = UDim2.new(0.3, 0, 0.2, 0)
-    components.bg.Size = UDim2.new(0.4, 0, 0.6, 0)
-    components.bg.ClipsDescendants = true
+HeaderBar.Name = "HeaderBar"
+HeaderBar.Parent = MainContainer
+HeaderBar.BackgroundColor3 = Color3.new(0.760784, 0.0117647, 0.317647)
+HeaderBar.BorderSizePixel = 0
+HeaderBar.Size = UDim2.new(1, 0, 0, 18)
+HeaderBar.ZIndex = 2
 
-    -- Top ribbon
-    components.ribbon = Instance.new("Frame")
-    components.ribbon.Name = "Ribbon"
-    components.ribbon.Parent = components.bg
-    components.ribbon.BackgroundColor3 = Color3.new(0.760784, 0.0117647, 0.317647)
-    components.ribbon.BorderSizePixel = 0
-    components.ribbon.Size = UDim2.new(1, 0, 0, 18)
-    components.ribbon.ZIndex = 2
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = HeaderBar
+MinimizeButton.BackgroundColor3 = Color3.new(1, 0, 0)
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.Position = UDim2.new(1, -30, 0, 0)
+MinimizeButton.Size = UDim2.new(0, 30, 0, 18)
+MinimizeButton.ZIndex = 3
+MinimizeButton.Font = Enum.Font.SourceSansBold
+MinimizeButton.FontSize = Enum.FontSize.Size12
+MinimizeButton.Text = "_"
+MinimizeButton.TextColor3 = Color3.new(1, 1, 1)
+MinimizeButton.TextSize = 12
 
-    -- Hide button
-    components.hideBtn = Instance.new("TextButton")
-    components.hideBtn.Name = "Hide"
-    components.hideBtn.Parent = components.ribbon
-    components.hideBtn.BackgroundColor3 = Color3.new(1, 0, 0)
-    components.hideBtn.BorderSizePixel = 0
-    components.hideBtn.Position = UDim2.new(1, -30, 0, 0)
-    components.hideBtn.Size = UDim2.new(0, 30, 0, 18)
-    components.hideBtn.ZIndex = 3
-    components.hideBtn.Font = Enum.Font.SourceSansBold
-    components.hideBtn.FontSize = Enum.FontSize.Size12
-    components.hideBtn.Text = "_"
-    components.hideBtn.TextColor3 = Color3.new(1, 1, 1)
-    components.hideBtn.TextSize = 12
+HeaderTitle.Name = "HeaderTitle"
+HeaderTitle.Parent = HeaderBar
+HeaderTitle.BackgroundColor3 = Color3.new(1, 0.0117647, 0.423529)
+HeaderTitle.BorderSizePixel = 0
+HeaderTitle.Position = UDim2.new(0.5, -75, 0, 0)
+HeaderTitle.Size = UDim2.new(0, 150, 0, 18)
+HeaderTitle.ZIndex = 3
+HeaderTitle.Font = Enum.Font.SourceSansBold
+HeaderTitle.FontSize = Enum.FontSize.Size12
+HeaderTitle.Text = "EventMonitor v2"
+HeaderTitle.TextColor3 = Color3.new(1, 1, 1)
+HeaderTitle.TextSize = 12
 
-    -- Title label
-    components.title = Instance.new("TextLabel")
-    components.title.Name = "Title"
-    components.title.Parent = components.ribbon
-    components.title.BackgroundColor3 = Color3.new(1, 0.0117647, 0.423529)
-    components.title.BorderSizePixel = 0
-    components.title.Position = UDim2.new(0.5, -75, 0, 0)
-    components.title.Size = UDim2.new(0, 150, 0, 18)
-    components.title.ZIndex = 3
-    components.title.Font = Enum.Font.SourceSansBold
-    components.title.FontSize = Enum.FontSize.Size12
-    components.title.Text = "Remote2Script v2"
-    components.title.TextColor3 = Color3.new(1, 1, 1)
-    components.title.TextSize = 12
+EventsList.Name = "EventsList"
+EventsList.Parent = MainContainer
+EventsList.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+EventsList.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+EventsList.Position = UDim2.new(0, 5, 0, 60)
+EventsList.CanvasSize = UDim2.new(0, 0, 40, 0)
+EventsList.Size = UDim2.new(0, 180, 1, -65)
+EventsList.ZIndex = 2
+EventsList.BottomImage = "rbxassetid://148970562"
+EventsList.MidImage = "rbxassetid://148970562"
+EventsList.ScrollBarThickness = 4
+EventsList.TopImage = "rbxassetid://148970562"
 
-    -- Fullscreen button
-    components.fullscreen = Instance.new("TextButton")
-    components.fullscreen.Name = "FullScreen"
-    components.fullscreen.Parent = components.ribbon
-    components.fullscreen.BackgroundColor3 = Color3.new(1, 0, 0)
-    components.fullscreen.BorderSizePixel = 0
-    components.fullscreen.Position = UDim2.new(1, -65, 0, 0)
-    components.fullscreen.Size = UDim2.new(0, 30, 0, 18)
-    components.fullscreen.ZIndex = 3
-    components.fullscreen.Font = Enum.Font.SourceSansBold
-    components.fullscreen.FontSize = Enum.FontSize.Size12
-    components.fullscreen.Text = "[~]"
-    components.fullscreen.TextColor3 = Color3.new(1, 1, 1)
-    components.fullscreen.TextSize = 12
+CodeView.Name = "CodeView"
+CodeView.Parent = MainContainer
+CodeView.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+CodeView.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+CodeView.Position = UDim2.new(0, 190, 0, 60)
+CodeView.Size = UDim2.new(1, -195, 1, -65)
+CodeView.ZIndex = 2
+CodeView.BottomImage = "rbxassetid://148970562"
+CodeView.CanvasSize = UDim2.new(3, 0, 160, 0)
+CodeView.MidImage = "rbxassetid://148970562"
+CodeView.ScrollBarThickness = 4
+CodeView.TopImage = "rbxassetid://148970562"
 
-    -- Remotes list scroll frame
-    components.remotesList = Instance.new("ScrollingFrame")
-    components.remotesList.Name = "Remotes"
-    components.remotesList.Parent = components.bg
-    components.remotesList.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.remotesList.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    components.remotesList.Position = UDim2.new(0, 5, 0, 60)
-    components.remotesList.CanvasSize = UDim2.new(0, 0, 40, 0)
-    components.remotesList.Size = UDim2.new(0, 180, 1, -65)
-    components.remotesList.ZIndex = 2
-    components.remotesList.BottomImage = "rbxassetid://148970562"
-    components.remotesList.MidImage = "rbxassetid://148970562"
-    components.remotesList.ScrollBarThickness = 4
-    components.remotesList.TopImage = "rbxassetid://148970562"
+ControlPanel.Name = "ControlPanel"
+ControlPanel.Parent = MainContainer
+ControlPanel.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+ControlPanel.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+ControlPanel.Position = UDim2.new(0, 5, 0, 25)
+ControlPanel.Size = UDim2.new(1, -10, 0, 30)
+ControlPanel.ZIndex = 2
+ControlPanel.ClipsDescendants = true
 
-    -- Source code display
-    components.sourceDisplay = Instance.new("ScrollingFrame")
-    components.sourceDisplay.Name = "Source"
-    components.sourceDisplay.Parent = components.bg
-    components.sourceDisplay.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.sourceDisplay.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    components.sourceDisplay.Position = UDim2.new(0, 190, 0, 60)
-    components.sourceDisplay.Size = UDim2.new(1, -195, 1, -65)
-    components.sourceDisplay.ZIndex = 2
-    components.sourceDisplay.BottomImage = "rbxassetid://148970562"
-    components.sourceDisplay.CanvasSize = UDim2.new(3, 0, 160, 0)
-    components.sourceDisplay.MidImage = "rbxassetid://148970562"
-    components.sourceDisplay.ScrollBarThickness = 4
-    components.sourceDisplay.TopImage = "rbxassetid://148970562"
+CopyButton.Name = "CopyButton"
+CopyButton.Parent = ControlPanel
+CopyButton.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+CopyButton.BorderColor3 = Color3.new(0.117647, 0.392157, 0.117647)
+CopyButton.Position = UDim2.new(0, 5, 0.5, -10)
+CopyButton.Size = UDim2.new(0, 70, 0, 18)
+CopyButton.ZIndex = 3
+CopyButton.Font = Enum.Font.SourceSansBold
+CopyButton.FontSize = Enum.FontSize.Size12
+CopyButton.Text = "COPY"
+CopyButton.TextColor3 = Color3.new(0.235294, 0.784314, 0.235294)
+CopyButton.TextSize = 12
 
-    -- Buttons frame
-    components.buttonsFrame = Instance.new("Frame")
-    components.buttonsFrame.Name = "ButtonsFrame"
-    components.buttonsFrame.Parent = components.bg
-    components.buttonsFrame.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.buttonsFrame.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    components.buttonsFrame.Position = UDim2.new(0, 5, 0, 25)
-    components.buttonsFrame.Size = UDim2.new(1, -10, 0, 30)
-    components.buttonsFrame.ZIndex = 2
-    components.buttonsFrame.ClipsDescendants = true
+GetResultButton.Name = "GetResultButton"
+GetResultButton.Parent = ControlPanel
+GetResultButton.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+GetResultButton.BorderColor3 = Color3.new(0.384314, 0.384314, 0.384314)
+GetResultButton.Position = UDim2.new(0, 80, 0.5, -10)
+GetResultButton.Size = UDim2.new(0, 70, 0, 18)
+GetResultButton.ZIndex = 3
+GetResultButton.Font = Enum.Font.SourceSansBold
+GetResultButton.FontSize = Enum.FontSize.Size12
+GetResultButton.Text = "RESULT"
+GetResultButton.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+GetResultButton.TextSize = 12
 
-    -- Control buttons
-    local buttonConfigs = {
-        {name = "ToClipboard", text = "COPY", pos = UDim2.new(0, 5, 0.5, -10), 
-         color = Color3.new(0.235294, 0.784314, 0.235294), border = Color3.new(0.117647, 0.392157, 0.117647)},
-        {name = "GetReturn", text = "RETURN", pos = UDim2.new(0, 80, 0.5, -10), 
-         color = Color3.new(0.784314, 0.784314, 0.784314), border = Color3.new(0.384314, 0.384314, 0.384314)},
-        {name = "ClearList", text = "CLEAR", pos = UDim2.new(0, 155, 0.5, -10), 
-         color = Color3.new(0.784314, 0.784314, 0.784314), border = Color3.new(0.384314, 0.384314, 0.384314)},
-        {name = "CryptStrings", text = "CRYPT", pos = UDim2.new(0, 230, 0.5, -10), 
-         color = Color3.new(0.784314, 0.235294, 0.235294), border = Color3.new(0.392157, 0.117647, 0.117647)},
-        {name = "EnableSpy", text = "SPY", pos = UDim2.new(0, 305, 0.5, -10), 
-         color = Color3.fromRGB(60, 200, 60), border = Color3.fromRGB(30, 100, 30)},
-        {name = "Settings", text = "REMOTES", pos = UDim2.new(1, -75, 0.5, -10), 
-         color = Color3.new(0.235294, 0.784314, 0.784314), border = Color3.new(0.117647, 0.392157, 0.392157)}
-    }
+ClearButton.Name = "ClearButton"
+ClearButton.Parent = ControlPanel
+ClearButton.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+ClearButton.BorderColor3 = Color3.new(0.384314, 0.384314, 0.384314)
+ClearButton.Position = UDim2.new(0, 155, 0.5, -10)
+ClearButton.Size = UDim2.new(0, 70, 0, 18)
+ClearButton.ZIndex = 3
+ClearButton.Font = Enum.Font.SourceSansBold
+ClearButton.FontSize = Enum.FontSize.Size12
+ClearButton.Text = "CLEAR"
+ClearButton.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+ClearButton.TextSize = 12
 
-    for _, config in ipairs(buttonConfigs) do
-        local btn = Instance.new("TextButton")
-        btn.Name = config.name
-        btn.Parent = components.buttonsFrame
-        btn.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-        btn.BorderColor3 = config.border
-        btn.Position = config.pos
-        btn.Size = UDim2.new(0, 70, 0, 18)
-        btn.ZIndex = 3
-        btn.Font = Enum.Font.SourceSansBold
-        btn.FontSize = Enum.FontSize.Size12
-        btn.Text = config.text
-        btn.TextColor3 = config.color
-        btn.TextSize = 12
-        components[config.name:lower()] = btn
-    end
+StringEncryptionButton.Name = "StringEncryptionButton"
+StringEncryptionButton.Parent = ControlPanel
+StringEncryptionButton.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+StringEncryptionButton.BorderColor3 = Color3.new(0.392157, 0.117647, 0.117647)
+StringEncryptionButton.Position = UDim2.new(0, 230, 0.5, -10)
+StringEncryptionButton.Size = UDim2.new(0, 70, 0, 18)
+StringEncryptionButton.ZIndex = 3
+StringEncryptionButton.Font = Enum.Font.SourceSansBold
+StringEncryptionButton.FontSize = Enum.FontSize.Size12
+StringEncryptionButton.Text = "ENCRYPT"
+StringEncryptionButton.TextColor3 = Color3.new(0.784314, 0.235294, 0.235294)
+StringEncryptionButton.TextSize = 12
 
-    -- Status labels
-    components.lastLabel = Instance.new("TextLabel")
-    components.lastLabel.Name = "Last"
-    components.lastLabel.Parent = components.buttonsFrame
-    components.lastLabel.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.lastLabel.BorderColor3 = Color3.new(0.384314, 0.384314, 0.384314)
-    components.lastLabel.Position = UDim2.new(0, 380, 0.5, -10)
-    components.lastLabel.Size = UDim2.new(0, 120, 0, 18)
-    components.lastLabel.ZIndex = 3
-    components.lastLabel.Font = Enum.Font.SourceSansBold
-    components.lastLabel.FontSize = Enum.FontSize.Size12
-    components.lastLabel.Text = ""
-    components.lastLabel.TextColor3 = Color3.new(1, 1, 1)
-    components.lastLabel.TextSize = 12
-    components.lastLabel.TextWrapped = true
+var_EnableMonitoring.Name = "var_EnableMonitoring"
+var_EnableMonitoring.Parent = ControlPanel
+var_EnableMonitoring.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_EnableMonitoring.BorderColor3 = Color3.fromRGB(30, 100, 30)
+var_EnableMonitoring.Position = UDim2.new(0, 305, 0.5, -10)
+var_EnableMonitoring.Size = UDim2.new(0, 70, 0, 18)
+var_EnableMonitoring.ZIndex = 3
+var_EnableMonitoring.Font = Enum.Font.SourceSansBold
+var_EnableMonitoring.FontSize = Enum.FontSize.Size12
+var_EnableMonitoring.Text = "MONITOR"
+var_EnableMonitoring.TextColor3 = Color3.fromRGB(60, 200, 60)
+var_EnableMonitoring.TextSize = 12
 
-    components.totalLabel = Instance.new("TextLabel")
-    components.totalLabel.Name = "Total"
-    components.totalLabel.Parent = components.buttonsFrame
-    components.totalLabel.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.totalLabel.BorderColor3 = Color3.new(0.384314, 0.384314, 0.384314)
-    components.totalLabel.Position = UDim2.new(0, 505, 0.5, -10)
-    components.totalLabel.Size = UDim2.new(0, 40, 0, 18)
-    components.totalLabel.ZIndex = 3
-    components.totalLabel.Font = Enum.Font.SourceSansBold
-    components.totalLabel.FontSize = Enum.FontSize.Size12
-    components.totalLabel.Text = "0"
-    components.totalLabel.TextColor3 = Color3.new(1, 1, 1)
-    components.totalLabel.TextSize = 12
-    components.totalLabel.TextWrapped = true
+var_LastEventLabel.Name = "var_LastEventLabel"
+var_LastEventLabel.Parent = ControlPanel
+var_LastEventLabel.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_LastEventLabel.BorderColor3 = Color3.new(0.384314, 0.384314, 0.384314)
+var_LastEventLabel.Position = UDim2.new(0, 380, 0.5, -10)
+var_LastEventLabel.Size = UDim2.new(0, 120, 0, 18)
+var_LastEventLabel.ZIndex = 3
+var_LastEventLabel.Font = Enum.Font.SourceSansBold
+var_LastEventLabel.FontSize = Enum.FontSize.Size12
+var_LastEventLabel.Text = ""
+var_LastEventLabel.TextColor3 = Color3.new(1, 1, 1)
+var_LastEventLabel.TextSize = 12
+var_LastEventLabel.TextWrapped = true
 
-    -- Settings panel
-    components.settingsPanel = Instance.new("ScrollingFrame")
-    components.settingsPanel.Name = "SetRemotes"
-    components.settingsPanel.Parent = components.bg
-    components.settingsPanel.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.settingsPanel.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    components.settingsPanel.Position = UDim2.new(0, 190, 0, 60)
-    components.settingsPanel.Size = UDim2.new(1, -195, 1, -100)
-    components.settingsPanel.Visible = false
-    components.settingsPanel.ZIndex = 2
-    components.settingsPanel.BottomImage = "rbxassetid://148970562"
-    components.settingsPanel.CanvasSize = UDim2.new(0, 0, 25, 0)
-    components.settingsPanel.MidImage = "rbxassetid://148970562"
-    components.settingsPanel.ScrollBarThickness = 4
-    components.settingsPanel.TopImage = "rbxassetid://148970562"
+var_TotalEventsLabel.Name = "var_TotalEventsLabel"
+var_TotalEventsLabel.Parent = ControlPanel
+var_TotalEventsLabel.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_TotalEventsLabel.BorderColor3 = Color3.new(0.384314, 0.384314, 0.384314)
+var_TotalEventsLabel.Position = UDim2.new(0, 505, 0.5, -10)
+var_TotalEventsLabel.Size = UDim2.new(0, 40, 0, 18)
+var_TotalEventsLabel.ZIndex = 3
+var_TotalEventsLabel.Font = Enum.Font.SourceSansBold
+var_TotalEventsLabel.FontSize = Enum.FontSize.Size12
+var_TotalEventsLabel.Text = "0"
+var_TotalEventsLabel.TextColor3 = Color3.new(1, 1, 1)
+var_TotalEventsLabel.TextSize = 12
+var_TotalEventsLabel.TextWrapped = true
 
-    -- Settings tab
-    components.settingsTab = Instance.new("Frame")
-    components.settingsTab.Name = "SetRemotesTab"
-    components.settingsTab.Parent = components.bg
-    components.settingsTab.Visible = false
-    components.settingsTab.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.settingsTab.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    components.settingsTab.ClipsDescendants = true
-    components.settingsTab.Position = UDim2.new(0, 190, 1, -40)
-    components.settingsTab.Size = UDim2.new(1, -195, 0, 35)
-    components.settingsTab.ZIndex = 2
+var_SettingsButton.Name = "var_SettingsButton"
+var_SettingsButton.Parent = ControlPanel
+var_SettingsButton.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_SettingsButton.BorderColor3 = Color3.new(0.117647, 0.392157, 0.392157)
+var_SettingsButton.Position = UDim2.new(1, -75, 0.5, -10)
+var_SettingsButton.Size = UDim2.new(0, 70, 0, 18)
+var_SettingsButton.ZIndex = 3
+var_SettingsButton.Font = Enum.Font.SourceSansBold
+var_SettingsButton.FontSize = Enum.FontSize.Size12
+var_SettingsButton.Text = "SETTINGS"
+var_SettingsButton.TextColor3 = Color3.new(0.235294, 0.784314, 0.784314)
+var_SettingsButton.TextSize = 12
 
-    -- Filter buttons in settings tab
-    local filterConfigs = {
-        {name = "FilterE", text = "FILTER EVT", pos = UDim2.new(0, 5, 0.5, -10), size = UDim2.new(0, 80, 0, 18)},
-        {name = "FilterF", text = "FILTER FUNC", pos = UDim2.new(0, 90, 0.5, -10), size = UDim2.new(0, 90, 0, 18)}
-    }
+var_RemoteSettings.Name = "var_RemoteSettings"
+var_RemoteSettings.Parent = MainContainer
+var_RemoteSettings.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_RemoteSettings.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+var_RemoteSettings.Position = UDim2.new(0, 190, 0, 60)
+var_RemoteSettings.Size = UDim2.new(1, -195, 1, -100)
+var_RemoteSettings.Visible = false
+var_RemoteSettings.ZIndex = 2
+var_RemoteSettings.BottomImage = "rbxassetid://148970562"
+var_RemoteSettings.CanvasSize = UDim2.new(0, 0, 25, 0)
+var_RemoteSettings.MidImage = "rbxassetid://148970562"
+var_RemoteSettings.ScrollBarThickness = 4
+var_RemoteSettings.TopImage = "rbxassetid://148970562"
 
-    for _, config in ipairs(filterConfigs) do
-        local btn = Instance.new("TextButton")
-        btn.Name = config.name
-        btn.Parent = components.settingsTab
-        btn.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-        btn.BorderColor3 = Color3.new(0.392157, 0.117647, 0.117647)
-        btn.Position = config.pos
-        btn.Size = config.size
-        btn.ZIndex = 3
-        btn.Font = Enum.Font.SourceSansBold
-        btn.FontSize = Enum.FontSize.Size12
-        btn.Text = config.text
-        btn.TextColor3 = Color3.new(0.784314, 0.235294, 0.235294)
-        btn.TextSize = 12
-        components[config.name:lower()] = btn
-    end
+var_TemplateStorage.Name = "var_TemplateStorage"
+var_TemplateStorage.Parent = VisualInterface
+var_TemplateStorage.BackgroundColor3 = Color3.new(1, 1, 1)
+var_TemplateStorage.Size = UDim2.new(0, 100, 0, 100)
+var_TemplateStorage.Visible = false
 
-    -- Search box
-    components.searchBox = Instance.new("TextBox")
-    components.searchBox.Name = "Search"
-    components.searchBox.Parent = components.settingsTab
-    components.searchBox.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    components.searchBox.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    components.searchBox.Position = UDim2.new(0, 185, 0.5, -10)
-    components.searchBox.Selectable = true
-    components.searchBox.Size = UDim2.new(1, -190, 0, 18)
-    components.searchBox.ZIndex = 3
-    components.searchBox.Font = Enum.Font.SourceSansBold
-    components.searchBox.FontSize = Enum.FontSize.Size12
-    components.searchBox.Text = "[SEARCH]"
-    components.searchBox.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
-    components.searchBox.TextSize = 12
+var_EventTemplate.Name = "var_EventTemplate"
+var_EventTemplate.Parent = var_TemplateStorage
+var_EventTemplate.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_EventTemplate.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+var_EventTemplate.Position = UDim2.new(0, 5, 0, 5)
+var_EventTemplate.Size = UDim2.new(1, -10, 0, 18)
+var_EventTemplate.ZIndex = 3
+var_EventTemplate.Font = Enum.Font.SourceSansBold
+var_EventTemplate.FontSize = Enum.FontSize.Size12
+var_EventTemplate.Text = ""
+var_EventTemplate.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+var_EventTemplate.TextSize = 12
+var_EventTemplate.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Storage for templates
-    components.storage = Instance.new("Frame")
-    components.storage.Name = "Storage"
-    components.storage.Parent = components.main
-    components.storage.BackgroundColor3 = Color3.new(1, 1, 1)
-    components.storage.Size = UDim2.new(0, 100, 0, 100)
-    components.storage.Visible = false
+var_EventIcon.Name = "var_EventIcon"
+var_EventIcon.Parent = var_EventTemplate
+var_EventIcon.BackgroundColor3 = Color3.new(1, 1, 1)
+var_EventIcon.BackgroundTransparency = 1
+var_EventIcon.Size = UDim2.new(0, 18, 0, 18)
+var_EventIcon.ZIndex = 4
+var_EventIcon.Image = "rbxassetid://413369506"
 
-    return components, services
-end
+var_EventNameLabel.Name = "var_EventNameLabel"
+var_EventNameLabel.Parent = var_EventTemplate
+var_EventNameLabel.BackgroundColor3 = Color3.new(0.713726, 0.00392157, 0.298039)
+var_EventNameLabel.BorderSizePixel = 0
+var_EventNameLabel.Position = UDim2.new(0, 25, 0, 0)
+var_EventNameLabel.Size = UDim2.new(0, 100, 0, 18)
+var_EventNameLabel.ZIndex = 4
+var_EventNameLabel.Font = Enum.Font.SourceSansBold
+var_EventNameLabel.FontSize = Enum.FontSize.Size12
+var_EventNameLabel.Text = "10"
+var_EventNameLabel.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+var_EventNameLabel.TextSize = 12
 
--- Template creation functions
-function GuiModule.createRemoteButton()
-    local btn = Instance.new("TextButton")
-    btn.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    btn.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    btn.Size = UDim2.new(1, -10, 0, 18)
-    btn.ZIndex = 3
-    btn.Font = Enum.Font.SourceSansBold
-    btn.FontSize = Enum.FontSize.Size12
-    btn.Text = ""
-    btn.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
-    btn.TextSize = 12
-    btn.TextXAlignment = Enum.TextXAlignment.Left
+var_EventIdLabel.Name = "var_EventIdLabel"
+var_EventIdLabel.Parent = var_EventTemplate
+var_EventIdLabel.BackgroundColor3 = Color3.new(0.458824, 0.00392157, 0.192157)
+var_EventIdLabel.BorderSizePixel = 0
+var_EventIdLabel.Position = UDim2.new(1, -40, 0, 0)
+var_EventIdLabel.Size = UDim2.new(0, 40, 0, 18)
+var_EventIdLabel.ZIndex = 4
+var_EventIdLabel.Font = Enum.Font.SourceSansBold
+var_EventIdLabel.FontSize = Enum.FontSize.Size12
+var_EventIdLabel.Text = "10"
+var_EventIdLabel.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+var_EventIdLabel.TextSize = 12
 
-    local icon = Instance.new("ImageLabel")
-    icon.Name = "Icon"
-    icon.Parent = btn
-    icon.BackgroundTransparency = 1
-    icon.Size = UDim2.new(0, 18, 0, 18)
-    icon.ZIndex = 4
+var_SettingTemplate.Name = "var_SettingTemplate"
+var_SettingTemplate.Parent = var_TemplateStorage
+var_SettingTemplate.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_SettingTemplate.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+var_SettingTemplate.Position = UDim2.new(0, 5, 0, 5)
+var_SettingTemplate.Size = UDim2.new(1, -10, 0, 18)
+var_SettingTemplate.ZIndex = 3
+var_SettingTemplate.Font = Enum.Font.SourceSansBold
+var_SettingTemplate.FontSize = Enum.FontSize.Size12
+var_SettingTemplate.Text = ""
+var_SettingTemplate.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+var_SettingTemplate.TextSize = 11
+var_SettingTemplate.TextXAlignment = Enum.TextXAlignment.Left
 
-    local nameLbl = Instance.new("TextLabel")
-    nameLbl.Name = "RemoteName"
-    nameLbl.Parent = btn
-    nameLbl.BackgroundColor3 = Color3.new(0.713726, 0.00392157, 0.298039)
-    nameLbl.BorderSizePixel = 0
-    nameLbl.Position = UDim2.new(0, 25, 0, 0)
-    nameLbl.Size = UDim2.new(0, 100, 0, 18)
-    nameLbl.ZIndex = 4
-    nameLbl.Font = Enum.Font.SourceSansBold
-    nameLbl.FontSize = Enum.FontSize.Size12
-    nameLbl.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
-    nameLbl.TextSize = 12
+var_SettingIcon.Name = "var_SettingIcon"
+var_SettingIcon.Parent = var_SettingTemplate
+var_SettingIcon.BackgroundColor3 = Color3.new(1, 1, 1)
+var_SettingIcon.BackgroundTransparency = 1
+var_SettingIcon.Size = UDim2.new(0, 18, 0, 18)
+var_SettingIcon.ZIndex = 4
+var_SettingIcon.Image = "rbxassetid://413369506"
 
-    local idLbl = Instance.new("TextLabel")
-    idLbl.Name = "ID"
-    idLbl.Parent = btn
-    idLbl.BackgroundColor3 = Color3.new(0.458824, 0.00392157, 0.192157)
-    idLbl.BorderSizePixel = 0
-    idLbl.Position = UDim2.new(1, -40, 0, 0)
-    idLbl.Size = UDim2.new(0, 40, 0, 18)
-    idLbl.ZIndex = 4
-    idLbl.Font = Enum.Font.SourceSansBold
-    idLbl.FontSize = Enum.FontSize.Size12
-    idLbl.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
-    idLbl.TextSize = 12
+var_SettingNameLabel.Name = "var_SettingNameLabel"
+var_SettingNameLabel.Parent = var_SettingTemplate
+var_SettingNameLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+var_SettingNameLabel.BorderSizePixel = 1
+var_SettingNameLabel.BorderColor3 = Color3.fromRGB(62, 62, 62)
+var_SettingNameLabel.Position = UDim2.new(0, 25, 0, 0)
+var_SettingNameLabel.Size = UDim2.new(0, 100, 0, 18)
+var_SettingNameLabel.ZIndex = 4
+var_SettingNameLabel.Font = Enum.Font.SourceSansBold
+var_SettingNameLabel.FontSize = Enum.FontSize.Size12
+var_SettingNameLabel.Text = "SayMessageRequest"
+var_SettingNameLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+var_SettingNameLabel.TextSize = 11
 
-    return btn
-end
+var_SettingIdLabel.Name = "var_SettingIdLabel"
+var_SettingIdLabel.Parent = var_SettingTemplate
+var_SettingIdLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+var_SettingIdLabel.BorderSizePixel = 1
+var_SettingIdLabel.BorderColor3 = Color3.fromRGB(62, 62, 62)
+var_SettingIdLabel.Position = UDim2.new(1, -500, 0, 0)
+var_SettingIdLabel.Size = UDim2.new(0, 500, 0, 18)
+var_SettingIdLabel.ZIndex = 3
+var_SettingIdLabel.Font = Enum.Font.SourceSansBold
+var_SettingIdLabel.FontSize = Enum.FontSize.Size12
+var_SettingIdLabel.Text = "10"
+var_SettingIdLabel.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+var_SettingIdLabel.TextSize = 12
 
-function GuiModule.createSettingsButton()
-    local btn = Instance.new("TextButton")
-    btn.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
-    btn.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
-    btn.Size = UDim2.new(1, -10, 0, 18)
-    btn.ZIndex = 3
-    btn.Font = Enum.Font.SourceSansBold
-    btn.FontSize = Enum.FontSize.Size12
-    btn.Text = ""
-    btn.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
-    btn.TextSize = 11
-    btn.TextXAlignment = Enum.TextXAlignment.Left
+var_CodeLineTemplate.Name = "var_CodeLineTemplate"
+var_CodeLineTemplate.Parent = var_TemplateStorage
+var_CodeLineTemplate.BackgroundColor3 = Color3.new(1, 1, 1)
+var_CodeLineTemplate.BackgroundTransparency = 1
+var_CodeLineTemplate.Size = UDim2.new(1, 0, 0, 15)
+var_CodeLineTemplate.ZIndex = 2
 
-    local icon = Instance.new("ImageLabel")
-    icon.Name = "Icon"
-    icon.Parent = btn
-    icon.BackgroundTransparency = 1
-    icon.Size = UDim2.new(0, 18, 0, 18)
-    icon.ZIndex = 4
-    icon.Image = "rbxassetid://413369506"
+var_LineNumber.Name = "var_LineNumber"
+var_LineNumber.Parent = var_CodeLineTemplate
+var_LineNumber.BackgroundColor3 = Color3.new(0.329412, 0, 0)
+var_LineNumber.BackgroundTransparency = 1
+var_LineNumber.BorderSizePixel = 0
+var_LineNumber.Size = UDim2.new(0, 30, 1, 0)
+var_LineNumber.ZIndex = 3
+var_LineNumber.Font = Enum.Font.SourceSansBold
+var_LineNumber.FontSize = Enum.FontSize.Size14
+var_LineNumber.Text = ""
+var_LineNumber.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+var_LineNumber.TextSize = 14
 
-    local nameLbl = Instance.new("TextLabel")
-    nameLbl.Name = "RemoteName"
-    nameLbl.Parent = btn
-    nameLbl.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    nameLbl.BorderSizePixel = 1
-    nameLbl.BorderColor3 = Color3.fromRGB(62, 62, 62)
-    nameLbl.Position = UDim2.new(0, 25, 0, 0)
-    nameLbl.Size = UDim2.new(0, 100, 0, 18)
-    nameLbl.ZIndex = 4
-    nameLbl.Font = Enum.Font.SourceSansBold
-    nameLbl.FontSize = Enum.FontSize.Size12
-    nameLbl.TextColor3 = Color3.fromRGB(200, 200, 200)
-    nameLbl.TextSize = 11
+var_CodeText.Name = "var_CodeText"
+var_CodeText.Parent = var_CodeLineTemplate
+var_CodeText.BackgroundColor3 = Color3.new(1, 1, 1)
+var_CodeText.BackgroundTransparency = 1
+var_CodeText.Position = UDim2.new(0, 30, 0, 0)
+var_CodeText.Size = UDim2.new(1, -30, 1, 0)
+var_CodeText.ZIndex = 3
+var_CodeText.Font = Enum.Font.Code
+var_CodeText.FontSize = Enum.FontSize.Size14
+var_CodeText.Text = ""
+var_CodeText.TextColor3 = Color3.new(1, 1, 1)
+var_CodeText.TextSize = 14
+var_CodeText.TextXAlignment = Enum.TextXAlignment.Left
 
-    local idLbl = Instance.new("TextLabel")
-    idLbl.Name = "ID"
-    idLbl.Parent = btn
-    idLbl.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    idLbl.BorderSizePixel = 1
-    idLbl.BorderColor3 = Color3.fromRGB(62, 62, 62)
-    idLbl.Position = UDim2.new(1, -500, 0, 0)
-    idLbl.Size = UDim2.new(0, 500, 0, 18)
-    idLbl.ZIndex = 3
-    idLbl.Font = Enum.Font.SourceSansBold
-    idLbl.FontSize = Enum.FontSize.Size12
-    idLbl.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
-    idLbl.TextSize = 12
+var_TokenHighlight.Name = "var_TokenHighlight"
+var_TokenHighlight.Parent = var_CodeLineTemplate
+var_TokenHighlight.BackgroundColor3 = Color3.new(1, 1, 1)
+var_TokenHighlight.BackgroundTransparency = 1
+var_TokenHighlight.Position = UDim2.new(0, 30, 0, 0)
+var_TokenHighlight.Size = UDim2.new(1, -30, 1, 0)
+var_TokenHighlight.ZIndex = 3
+var_TokenHighlight.Font = Enum.Font.Code
+var_TokenHighlight.FontSize = Enum.FontSize.Size14
+var_TokenHighlight.Text = ""
+var_TokenHighlight.TextColor3 = Color3.new(0.392157, 0.392157, 0.392157)
+var_TokenHighlight.TextSize = 14
+var_TokenHighlight.TextXAlignment = Enum.TextXAlignment.Left
 
-    local enabledLbl = Instance.new("TextLabel")
-    enabledLbl.Name = "Enabled"
-    enabledLbl.Parent = btn
-    enabledLbl.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    enabledLbl.BorderSizePixel = 1
-    enabledLbl.BorderColor3 = Color3.fromRGB(30, 100, 30)
-    enabledLbl.Position = UDim2.new(0, 150, 0, 0)
-    enabledLbl.Size = UDim2.new(0, 70, 1, 0)
-    enabledLbl.ZIndex = 4
-    enabledLbl.Font = Enum.Font.SourceSansBold
-    enabledLbl.FontSize = Enum.FontSize.Size12
-    enabledLbl.Text = "Enabled"
-    enabledLbl.TextColor3 = Color3.fromRGB(60, 200, 60)
-    enabledLbl.TextSize = 12
+var_StringHighlight.Name = "var_StringHighlight"
+var_StringHighlight.Parent = var_CodeLineTemplate
+var_StringHighlight.BackgroundColor3 = Color3.new(1, 1, 1)
+var_StringHighlight.BackgroundTransparency = 1
+var_StringHighlight.Position = UDim2.new(0, 30, 0, 0)
+var_StringHighlight.Size = UDim2.new(1, -30, 1, 0)
+var_StringHighlight.ZIndex = 5
+var_StringHighlight.Font = Enum.Font.Code
+var_StringHighlight.FontSize = Enum.FontSize.Size14
+var_StringHighlight.Text = ""
+var_StringHighlight.TextColor3 = Color3.new(1, 0.615686, 0)
+var_StringHighlight.TextSize = 14
+var_StringHighlight.TextXAlignment = Enum.TextXAlignment.Left
 
-    return btn
-end
+var_CommentHighlight.Name = "var_CommentHighlight"
+var_CommentHighlight.Parent = var_CodeLineTemplate
+var_CommentHighlight.BackgroundColor3 = Color3.new(1, 1, 1)
+var_CommentHighlight.BackgroundTransparency = 1
+var_CommentHighlight.Position = UDim2.new(0, 30, 0, 0)
+var_CommentHighlight.Size = UDim2.new(1, -30, 1, 0)
+var_CommentHighlight.ZIndex = 5
+var_CommentHighlight.Font = Enum.Font.Code
+var_CommentHighlight.FontSize = Enum.FontSize.Size14
+var_CommentHighlight.Text = ""
+var_CommentHighlight.TextColor3 = Color3.fromRGB(60, 200, 60)
+var_CommentHighlight.TextSize = 14
+var_CommentHighlight.TextXAlignment = Enum.TextXAlignment.Left
 
-function GuiModule.createScriptLine()
-    local line = Instance.new("Frame")
-    line.BackgroundTransparency = 1
-    line.Size = UDim2.new(1, 0, 0, 15)
-    line.ZIndex = 2
+var_RemoteMethodHighlight.Name = "var_RemoteMethodHighlight"
+var_RemoteMethodHighlight.Parent = var_CodeLineTemplate
+var_RemoteMethodHighlight.BackgroundColor3 = Color3.new(1, 1, 1)
+var_RemoteMethodHighlight.BackgroundTransparency = 1
+var_RemoteMethodHighlight.Position = UDim2.new(0, 30, 0, 0)
+var_RemoteMethodHighlight.Size = UDim2.new(1, -30, 1, 0)
+var_RemoteMethodHighlight.ZIndex = 3
+var_RemoteMethodHighlight.Font = Enum.Font.Code
+var_RemoteMethodHighlight.FontSize = Enum.FontSize.Size14
+var_RemoteMethodHighlight.Text = ""
+var_RemoteMethodHighlight.TextColor3 = Color3.fromRGB(0, 145, 255)
+var_RemoteMethodHighlight.TextSize = 14
+var_RemoteMethodHighlight.TextXAlignment = Enum.TextXAlignment.Left
 
-    local lineNum = Instance.new("TextLabel")
-    lineNum.Name = "Line"
-    lineNum.Parent = line
-    lineNum.BackgroundTransparency = 1
-    lineNum.Size = UDim2.new(0, 30, 1, 0)
-    lineNum.ZIndex = 3
-    lineNum.Font = Enum.Font.SourceSansBold
-    lineNum.FontSize = Enum.FontSize.Size14
-    lineNum.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
-    lineNum.TextSize = 14
+var_KeywordHighlight.Name = "var_KeywordHighlight"
+var_KeywordHighlight.Parent = var_CodeLineTemplate
+var_KeywordHighlight.BackgroundColor3 = Color3.new(1, 1, 1)
+var_KeywordHighlight.BackgroundTransparency = 1
+var_KeywordHighlight.Position = UDim2.new(0, 30, 0, 0)
+var_KeywordHighlight.Size = UDim2.new(1, -30, 1, 0)
+var_KeywordHighlight.ZIndex = 3
+var_KeywordHighlight.Font = Enum.Font.Code
+var_KeywordHighlight.FontSize = Enum.FontSize.Size14
+var_KeywordHighlight.Text = ""
+var_KeywordHighlight.TextColor3 = Color3.new(0.231373, 1, 0)
+var_KeywordHighlight.TextSize = 14
+var_KeywordHighlight.TextXAlignment = Enum.TextXAlignment.Left
 
-    local sourceText = Instance.new("TextLabel")
-    sourceText.Name = "SourceText"
-    sourceText.Parent = line
-    sourceText.BackgroundTransparency = 1
-    sourceText.Position = UDim2.new(0, 30, 0, 0)
-    sourceText.Size = UDim2.new(1, -30, 1, 0)
-    sourceText.ZIndex = 3
-    sourceText.Font = Enum.Font.Code
-    sourceText.FontSize = Enum.FontSize.Size14
-    sourceText.TextColor3 = Color3.new(1, 1, 1)
-    sourceText.TextSize = 14
-    sourceText.TextXAlignment = Enum.TextXAlignment.Left
+var_GlobalHighlight.Name = "var_GlobalHighlight"
+var_GlobalHighlight.Parent = var_CodeLineTemplate
+var_GlobalHighlight.BackgroundColor3 = Color3.new(1, 1, 1)
+var_GlobalHighlight.BackgroundTransparency = 1
+var_GlobalHighlight.Position = UDim2.new(0, 30, 0, 0)
+var_GlobalHighlight.Size = UDim2.new(1, -30, 1, 0)
+var_GlobalHighlight.ZIndex = 3
+var_GlobalHighlight.Font = Enum.Font.Code
+var_GlobalHighlight.FontSize = Enum.FontSize.Size14
+var_GlobalHighlight.Text = ""
+var_GlobalHighlight.TextColor3 = Color3.new(1, 0, 0)
+var_GlobalHighlight.TextSize = 14
+var_GlobalHighlight.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Syntax highlighting layers
-    local highlightTypes = {
-        {name = "Tokens", color = Color3.new(0.392157, 0.392157, 0.392157)},
-        {name = "Strings", color = Color3.new(1, 0.615686, 0)},
-        {name = "Comments", color = Color3.fromRGB(60, 200, 60)},
-        {name = "Keywords", color = Color3.new(0.231373, 1, 0)},
-        {name = "Globals", color = Color3.new(1, 0, 0)},
-        {name = "RemoteHighlight", color = Color3.fromRGB(0, 145, 255)}
-    }
+var_EnabledStatus.Name = "var_EnabledStatus"
+var_EnabledStatus.Parent = var_SettingTemplate
+var_EnabledStatus.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+var_EnabledStatus.BorderSizePixel = 1
+var_EnabledStatus.BorderColor3 = Color3.fromRGB(30, 100, 30)
+var_EnabledStatus.Position = UDim2.new(0, 150, 0, 0)
+var_EnabledStatus.Size = UDim2.new(0, 70, 1, 0)
+var_EnabledStatus.ZIndex = 4
+var_EnabledStatus.Font = Enum.Font.SourceSansBold
+var_EnabledStatus.FontSize = Enum.FontSize.Size12
+var_EnabledStatus.Text = "Enabled"
+var_EnabledStatus.TextColor3 = Color3.fromRGB(60, 200, 60)
+var_EnabledStatus.TextSize = 12
 
-    for _, hType in ipairs(highlightTypes) do
-        local highlight = Instance.new("TextLabel")
-        highlight.Name = hType.name
-        highlight.Parent = line
-        highlight.BackgroundTransparency = 1
-        highlight.Position = UDim2.new(0, 30, 0, 0)
-        highlight.Size = UDim2.new(1, -30, 1, 0)
-        highlight.ZIndex = hType.name == "RemoteHighlight" and 3 or (hType.name == "Strings" or hType.name == "Comments") and 5 or 3
-        highlight.Font = Enum.Font.Code
-        highlight.FontSize = Enum.FontSize.Size14
-        highlight.TextColor3 = hType.color
-        highlight.TextSize = 14
-        highlight.TextXAlignment = Enum.TextXAlignment.Left
-    end
+var_FullscreenButton.Name = "var_FullscreenButton"
+var_FullscreenButton.Parent = HeaderBar
+var_FullscreenButton.BackgroundColor3 = Color3.new(1, 0, 0)
+var_FullscreenButton.BorderSizePixel = 0
+var_FullscreenButton.Position = UDim2.new(1, -65, 0, 0)
+var_FullscreenButton.Size = UDim2.new(0, 30, 0, 18)
+var_FullscreenButton.ZIndex = 3
+var_FullscreenButton.Font = Enum.Font.SourceSansBold
+var_FullscreenButton.FontSize = Enum.FontSize.Size12
+var_FullscreenButton.Text = "[~]"
+var_FullscreenButton.TextColor3 = Color3.new(1, 1, 1)
+var_FullscreenButton.TextSize = 12
 
-    return line
-end
+var_SettingsTab.Name = "var_SettingsTab"
+var_SettingsTab.Parent = MainContainer
+var_SettingsTab.Visible = false
+var_SettingsTab.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_SettingsTab.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+var_SettingsTab.ClipsDescendants = true
+var_SettingsTab.Position = UDim2.new(0, 190, 1, -40)
+var_SettingsTab.Size = UDim2.new(1, -195, 0, 35)
+var_SettingsTab.ZIndex = 2
 
--- Initialize the GUI
-function GuiModule.init()
-    return createUI()
-end
+var_FilterFunctionsButton.Name = "var_FilterFunctionsButton"
+var_FilterFunctionsButton.Parent = var_SettingsTab
+var_FilterFunctionsButton.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_FilterFunctionsButton.BorderColor3 = Color3.new(0.392157, 0.117647, 0.117647)
+var_FilterFunctionsButton.Position = UDim2.new(0, 90, 0.5, -10)
+var_FilterFunctionsButton.Size = UDim2.new(0, 90, 0, 18)
+var_FilterFunctionsButton.ZIndex = 3
+var_FilterFunctionsButton.Font = Enum.Font.SourceSansBold
+var_FilterFunctionsButton.FontSize = Enum.FontSize.Size12
+var_FilterFunctionsButton.Text = "FILTER FUNC"
+var_FilterFunctionsButton.TextColor3 = Color3.new(0.784314, 0.235294, 0.235294)
+var_FilterFunctionsButton.TextSize = 12
 
-return GuiModule
+var_FilterEventsButton.Name = "var_FilterEventsButton"
+var_FilterEventsButton.Parent = var_SettingsTab
+var_FilterEventsButton.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_FilterEventsButton.BorderColor3 = Color3.new(0.392157, 0.117647, 0.117647)
+var_FilterEventsButton.Position = UDim2.new(0, 5, 0.5, -10)
+var_FilterEventsButton.Size = UDim2.new(0, 80, 0, 18)
+var_FilterEventsButton.ZIndex = 3
+var_FilterEventsButton.Font = Enum.Font.SourceSansBold
+var_FilterEventsButton.FontSize = Enum.FontSize.Size12
+var_FilterEventsButton.Text = "FILTER EVT"
+var_FilterEventsButton.TextColor3 = Color3.new(0.784314, 0.235294, 0.235294)
+var_FilterEventsButton.TextSize = 12
+
+var_SearchBox.Name = "var_SearchBox"
+var_SearchBox.Parent = var_SettingsTab
+var_SearchBox.BackgroundColor3 = Color3.new(0.0784314, 0.0784314, 0.0784314)
+var_SearchBox.BorderColor3 = Color3.new(0.243137, 0.243137, 0.243137)
+var_SearchBox.Position = UDim2.new(0, 185, 0.5, -10)
+var_SearchBox.Selectable = true
+var_SearchBox.Size = UDim2.new(1, -190, 0, 18)
+var_SearchBox.ZIndex = 3
+var_SearchBox.Font = Enum.Font.SourceSansBold
+var_SearchBox.FontSize = Enum.FontSize.Size12
+var_SearchBox.Text = "[SEARCH]"
+var_SearchBox.TextColor3 = Color3.new(0.784314, 0.784314, 0.784314)
+var_SearchBox.TextSize = 12
