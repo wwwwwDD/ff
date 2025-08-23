@@ -13,6 +13,10 @@ local var_RunService = game:GetService("RunService")
 local var_OriginalSize = MainContainer.Size
 local var_OriginalPosition = MainContainer.Position
 local var_IsMinimized = false
+local var_PendingEvents = {}
+local var_CurrentRemote = nil
+local var_CallerScript = nil
+local var_FunctionResult = nil
 
 -- Вспомогательные функции
 local function CheckSpecialCharacters(str)
@@ -91,6 +95,7 @@ end
 
 -- Обработчики интерфейса
 local function ToggleMinimize()
+    print("ToggleMinimize called")
     var_IsMinimized = not var_IsMinimized
     if var_IsMinimized then
         AnimateSize(MainContainer, UDim2.new(0, 200, 0, 18))
@@ -114,27 +119,49 @@ local function ToggleMinimize()
 end
 
 local function ToggleSettings()
+    print("ToggleSettings called")
     CodeView.Visible = not CodeView.Visible
     var_RemoteSettings.Visible = not CodeView.Visible
     var_SettingsTab.Visible = not CodeView.Visible
 end
 
 local function ToggleMonitoring()
+    print("ToggleMonitoring called")
     var_MonitoringActive = not var_MonitoringActive
     var_EnableMonitoring.TextColor3 = var_MonitoringActive and Color3.fromRGB(60, 200, 60) or Color3.fromRGB(200, 60, 60)
     var_EnableMonitoring.BorderColor3 = var_MonitoringActive and Color3.fromRGB(30, 100, 30) or Color3.fromRGB(100, 30, 30)
 end
 
 local function ToggleStringEncryption()
+    print("ToggleStringEncryption called")
     var_EncryptStrings = not var_EncryptStrings
     StringEncryptionButton.TextColor3 = var_EncryptStrings and Color3.fromRGB(60, 200, 60) or Color3.fromRGB(200, 60, 60)
     StringEncryptionButton.BorderColor3 = var_EncryptStrings and Color3.fromRGB(30, 100, 30) or Color3.fromRGB(100, 30, 30)
 end
 
 local function ClearEventLogs()
+    print("ClearEventLogs called")
     EventsList:ClearAllChildren()
     var_EventsCount = 0
     var_TotalEventsLabel.Text = "0"
+end
+
+local function CopyCode()
+    print("CopyCode called")
+    if var_CurrentRemote and var_PendingEvents[var_CurrentRemote] then
+        local script = var_PendingEvents[var_CurrentRemote].script
+        setclipboard(script)
+        print("Copied to clipboard:", script)
+    end
+end
+
+local function GetResult()
+    print("GetResult called")
+    if var_CurrentRemote and var_PendingEvents[var_CurrentRemote] then
+        local result = var_PendingEvents[var_CurrentRemote].result or "No result available"
+        setclipboard(result)
+        print("Result copied:", result)
+    end
 end
 
 -- Функции для работы с кодом
@@ -164,66 +191,103 @@ local function GenerateEventScript(object, method, ...)
 end
 
 -- Подключение обработчиков событий
-MinimizeButton.MouseButton1Down:Connect(ToggleMinimize)
-var_SettingsButton.MouseButton1Down:Connect(ToggleSettings)
-ClearButton.MouseButton1Down:Connect(ClearEventLogs)
-var_EnableMonitoring.MouseButton1Down:Connect(ToggleMonitoring)
-StringEncryptionButton.MouseButton1Down:Connect(ToggleStringEncryption)
+MinimizeButton.MouseButton1Click:Connect(ToggleMinimize)
+var_SettingsButton.MouseButton1Click:Connect(ToggleSettings)
+ClearButton.MouseButton1Click:Connect(ClearEventLogs)
+var_EnableMonitoring.MouseButton1Click:Connect(ToggleMonitoring)
+StringEncryptionButton.MouseButton1Click:Connect(ToggleStringEncryption)
+CopyButton.MouseButton1Click:Connect(CopyCode)
+GetResultButton.MouseButton1Click:Connect(GetResult)
 
 -- Основная логика мониторинга
 local var_GameMeta = getrawmetatable(game)
 local var_OriginalNamecall = var_GameMeta.__namecall
-local var_PendingEvents = {}
-local var_CurrentRemote = nil
-local var_CallerScript = nil
-local var_FunctionResult = nil
-
--- Функция для модификации метатаблицы
-local function MakeWritable()
-    if setreadonly ~= nil then
-        setreadonly(var_GameMeta, false)
-    elseif make_writeable ~= nil then 
-        make_writeable(var_GameMeta)
-    end
-end
-
-MakeWritable()
 
 -- Перехватчик вызовов
 local function NamecallHandler(object, ...)
-    local methodName = tostring(getnamecallmethod())
-    local arguments = {...}
-    
-    if object.Name ~= "CharacterSoundEvent" and methodName:match("Server") and var_MonitoringActive then
-        local eventData = {
-            script = GenerateEventScript(object, object.ClassName == "RemoteEvent" and "FireServer" or "InvokeServer", ...),
-            caller = getfenv(2).script,
-            object = object,
-            method = object.ClassName == "RemoteEvent" and "FireServer" or "InvokeServer",
-            result = nil
-        }
+    local success, result = pcall(function()
+        local methodName = tostring(getnamecallmethod())
+        local arguments = {...}
         
-        if object.ClassName == "RemoteFunction" then
-            local success, result = pcall(object.InvokeServer, object, ...)
-            if success then
-                eventData.result = #result > 0 and SerializeTable(result) or object.Name .. " is a void type RemoteFunction."
+        if var_MonitoringActive and (methodName == "FireServer" or methodName == "InvokeServer") then
+            print("Intercepted:", object.Name, methodName, arguments) -- Отладка
+            local eventData = {
+                script = GenerateEventScript(object, methodName, ...),
+                caller = getfenv(2).script,
+                object = object,
+                method = methodName,
+                result = nil
+            }
+            
+            if methodName == "InvokeServer" then
+                local success, invokeResult = pcall(object.InvokeServer, object, ...)
+                if success then
+                    eventData.result = type(invokeResult) == "table" and SerializeTable(invokeResult) or tostring(invokeResult)
+                else
+                    eventData.result = "Error: " .. invokeResult
+                end
             end
+            
+            table.insert(var_PendingEvents, eventData)
+            var_CurrentRemote = #var_PendingEvents
         end
         
-        table.insert(var_PendingEvents, eventData)
-    end
+        return var_OriginalNamecall(object, ...)
+    end)
     
-    return var_OriginalNamecall(object, ...)
+    if not success then
+        warn("Error in NamecallHandler:", result)
+        return var_OriginalNamecall(object, ...)
+    end
+    return result
 end
 
-var_GameMeta.__namecall = NamecallHandler
+-- Используем hookmetamethod, если доступно
+if hookmetamethod then
+    hookmetamethod(game, "__namecall", NamecallHandler)
+else
+    warn("hookmetamethod not available, falling back to direct metatable modification")
+    local function MakeWritable()
+        if setreadonly then
+            setreadonly(var_GameMeta, false)
+        elseif make_writeable then
+            make_writeable(var_GameMeta)
+        end
+    end
+    MakeWritable()
+    var_GameMeta.__namecall = NamecallHandler
+end
 
 -- Обработка накопленных событий
 var_RunService.Stepped:Connect(function()
     while #var_PendingEvents > 0 do
         local event = table.remove(var_PendingEvents, 1)
-        -- Логика отображения события в интерфейсе
         var_EventsCount = var_EventsCount + 1
         var_TotalEventsLabel.Text = tostring(var_EventsCount)
+        var_LastEventLabel.Text = event.object.Name
+        
+        -- Создание нового элемента в EventsList
+        local newEvent = var_EventTemplate:Clone()
+        newEvent.Parent = EventsList
+        newEvent.Visible = true
+        newEvent.Position = UDim2.new(0, 5, 0, (var_EventsCount - 1) * 20)
+        newEvent.var_EventNameLabel.Text = event.object.Name
+        newEvent.var_EventIdLabel.Text = tostring(var_EventsCount)
+        
+        -- Обновление CanvasSize
+        EventsList.CanvasSize = UDim2.new(0, 0, 0, var_EventsCount * 20)
+        
+        -- Отображение скрипта в CodeView
+        CodeView:ClearAllChildren()
+        local lines = event.script:split("\n")
+        for i, line in ipairs(lines) do
+            local codeLine = var_CodeLineTemplate:Clone()
+            codeLine.Parent = CodeView
+            codeLine.Position = UDim2.new(0, 0, 0, (i - 1) * 15)
+            codeLine.var_LineNumber.Text = tostring(i)
+            codeLine.var_CodeText.Text = line
+            codeLine.Visible = true
+        end
+        CodeView.CanvasSize = UDim2.new(0, 0, 0, #lines * 15)
     end
 end)
