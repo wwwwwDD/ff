@@ -1,18 +1,29 @@
--- Main Execution Script
+-- Main Execution Script - GitHub Version
 -- Advanced Remote Spy with Anti-Detection
--- Refactored for improved stealth and modularity
+-- Refactored for GitHub deployment
 
--- Anti-detection: Load modules dynamically to avoid static analysis
+-- Anti-detection: Load modules dynamically from GitHub
 local function loadModule(name)
-    -- In practice, these would be separate files or loaded remotely
-    -- For this example, they're assumed to be available as ModuleScripts
-    if name == "gui" then
-        -- Return the GUI module (would be loaded from gui.lua)
-        return require(script.gui) -- Assuming gui.lua is a ModuleScript
-    elseif name == "core" then
-        -- Return the core module (would be loaded from core.lua)  
-        return require(script.core) -- Assuming core.lua is a ModuleScript
+    local baseUrl = "https://raw.githubusercontent.com/wwwwwDD/ff/main/"
+    local urls = {
+        gui = baseUrl .. "gui.lua",
+        core = baseUrl .. "core.lua"
+    }
+    
+    if urls[name] then
+        local success, result = pcall(function()
+            return loadstring(game:HttpGet(urls[name]))()
+        end)
+        
+        if success then
+            return result
+        else
+            warn("Failed to load module " .. name .. ": " .. tostring(result))
+            return nil
+        end
     end
+    
+    return nil
 end
 
 -- Anti-detection: Initialize with obfuscated execution flow
@@ -68,8 +79,10 @@ local function cleanup()
 end
 
 -- Anti-detection: Register cleanup for script termination
-script.AncestryChanged:Connect(function()
-    if not script.Parent then
-        cleanup()
-    end
-end)
+if script and script.AncestryChanged then
+    script.AncestryChanged:Connect(function()
+        if not script.Parent then
+            cleanup()
+        end
+    end)
+end
